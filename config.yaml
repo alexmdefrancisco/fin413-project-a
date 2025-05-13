@@ -12,7 +12,7 @@ windows:
 
 paths:
   log_returns_csv:     "output/log_returns.csv"
-  cov_pp_csv:          "output/cov_PP.csv"
-  cov_tr_csv:          "output/cov_Tr.csv"
-  cleaned_cov_pp_npy:  "output/cleaned_cov_PP.npy"
-  cleaned_cov_tr_npy:  "output/cleaned_cov_Tr.npy"
+  cov_pp:          "output/cov_PP.csv"
+  cov_tr:          "output/cov_Tr.csv"
+  cleaned_cov_pp:  "output/cleaned_cov_PP.npy"
+  cleaned_cov_tr:  "output/cleaned_cov_Tr.npy"

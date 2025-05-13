@@ -41,10 +41,10 @@ def compute_covariances(cfg: dict, lr: pd.DataFrame) -> tuple:
     cov_tr = window_tr.cov()
 
     # Save to files
-    out_dir = os.path.dirname(cfg["paths"]["cov_pp_csv"])
+    out_dir = os.path.dirname(cfg["paths"]["cov_pp"])
     os.makedirs(out_dir, exist_ok=True)
-    cov_pp.to_csv(cfg["paths"]["cov_pp_csv"])
-    cov_tr.to_csv(cfg["paths"]["cov_tr_csv"])
+    cov_pp.to_csv(cfg["paths"]["cov_pp"])
+    cov_tr.to_csv(cfg["paths"]["cov_tr"])
 
     return cov_pp, cov_tr
 
@@ -58,6 +58,7 @@ def analyze_covariances(cfg: dict) -> None:
         cfg (dict): Configuration dictionary from config.yaml
     """
     # Load raw data for prices
+    out_dir = os.path.dirname(cfg["paths"]["raw_data"])
     raw_data_path = cfg["data"]["raw_data"]
     data = pd.read_csv(raw_data_path, sep=',')
     data['Date'] = pd.to_datetime(data['Date'], format='%d.%m.%Y')
@@ -71,7 +72,6 @@ def analyze_covariances(cfg: dict) -> None:
     prices = data[all_assets].ffill().dropna()
 
     # Output directory
-    out_dir = "output"
     os.makedirs(out_dir, exist_ok=True)
 
     # --- Section 2.a: EW Portfolio Values ---
@@ -101,8 +101,8 @@ def analyze_covariances(cfg: dict) -> None:
     plt.close()
 
     # --- Section 2.b: Load Covariance Matrices ---
-    cov_pp = pd.read_csv(cfg["paths"]["cov_pp_csv"], index_col=0)
-    cov_tr = pd.read_csv(cfg["paths"]["cov_tr_csv"], index_col=0)
+    cov_pp = pd.read_csv(cfg["paths"]["cov_pp"], index_col=0)
+    cov_tr = pd.read_csv(cfg["paths"]["cov_tr"], index_col=0)
 
     # Heatmaps
     fig, axes = plt.subplots(1, 2, figsize=(18, 7))
@@ -131,8 +131,8 @@ def analyze_covariances(cfg: dict) -> None:
     cleaned_cov_tr, eigvals_tr, eigvecs_tr = clean_covariance_matrix(cov_tr.values)
 
     # Save cleaned matrices
-    np.save(cfg["paths"]["cleaned_cov_pp_npy"], cleaned_cov_pp)
-    np.save(cfg["paths"]["cleaned_cov_tr_npy"], cleaned_cov_tr)
+    np.save(cfg["paths"]["cleaned_cov_pp"], cleaned_cov_pp)
+    np.save(cfg["paths"]["cleaned_cov_tr"], cleaned_cov_tr)
 
     # Eigenvalue spectra
     def plot_eigenvalue_spectra(cov_matrix, cleaned_cov_matrix, title, filename):

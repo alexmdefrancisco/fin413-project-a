@@ -20,8 +20,8 @@ def build_risk_portfolios(cfg: dict, log_returns: pd.DataFrame) -> None:
     for both peak and trough dates, then save CSVs and bar-chart images.
     """
     # Unpack config
-    clean_pp_path = cfg["paths"]["cleaned_cov_pp_npy"]
-    clean_tr_path = cfg["paths"]["cleaned_cov_tr_npy"]
+    clean_pp_path = cfg["paths"]["cleaned_cov_pp"]
+    clean_tr_path = cfg["paths"]["cleaned_cov_tr"]
     out_dir = os.path.dirname(clean_pp_path)
     os.makedirs(out_dir, exist_ok=True)
 
