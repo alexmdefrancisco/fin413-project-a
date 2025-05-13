@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.optimize import minimize
 
+# Utils import
+from utils import load_cov
+
 sns.set(style="whitegrid")
 
 def build_risk_portfolios(cfg: dict, log_returns: pd.DataFrame) -> None:
@@ -23,8 +26,8 @@ def build_risk_portfolios(cfg: dict, log_returns: pd.DataFrame) -> None:
     os.makedirs(out_dir, exist_ok=True)
 
     # Load cleaned covariance matrices
-    cov_pp = np.load(clean_pp_path)
-    cov_tr = np.load(clean_tr_path)
+    cov_pp = load_cov(clean_pp_path)
+    cov_tr = load_cov(clean_tr_path)
 
     # Asset list from log_returns
     assets = list(log_returns.columns)
