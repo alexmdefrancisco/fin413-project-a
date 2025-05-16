@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import seaborn as sns
 from scipy.cluster.hierarchy import linkage
 from scipy.spatial.distance import squareform
@@ -122,6 +123,9 @@ def build_tsm_hrpe(cfg: dict, log_returns: pd.DataFrame) -> pd.DataFrame:
 
     plt.figure(figsize=(12, 8))
     sns.heatmap(weights_df.T, cmap="RdBu_r", center=0)
+    step = 2  # Show every 2nd date
+    formatted_labels = [date.strftime("%Y-%m-%d") for date in weights_df.index[::step]]
+    plt.xticks(ticks=range(0, len(weights_df.index), step), labels=formatted_labels, rotation=90)    
     plt.title("TSM-HRPe Weights Over Time")
     plt.xlabel("Rebalance Date")
     plt.ylabel("Asset")
