@@ -26,20 +26,27 @@ def build_hrpe(cfg: dict, log_returns: pd.DataFrame) -> pd.Series:
         # select lookback of log returns
         window = log_returns.loc[:date].tail(lookback)
 
+        # form & clean the rolling covariance
+        cov_raw = window.cov()
+        eigvals, eigvecs = np.linalg.eigh(cov_raw.values)
+        eigvals = np.clip(eigvals, 1e-4, None)
+        cov_clean = pd.DataFrame(
+            eigvecs @ np.diag(eigvals) @ eigvecs.T,
+            index=cov_raw.index,
+            columns=cov_raw.columns
+        )
+
         # compute δ1‐distance matrix
         dist = schweizer_wolf_distance(window)
 
-        # hierarchical clustering
+        # cluster & quasi‐diagonalize
         condensed = squareform(dist.values)
         link      = linkage(condensed, method="single")
+        order     = getQuasiDiag(link)
+        labels    = window.columns[order].tolist()
 
-        # get sorted index and then labels
-        order  = getQuasiDiag(link)
-        labels = window.columns[order].tolist()
-
-        # compute HRP on the *covariance* of window
-        cov    = window.cov()
-        w      = getRecBipart(cov, labels)
+        # compute HRP on the *clean covariance* of window
+        w = getRecBipart(cov_clean, labels)
 
         # save CSV and bar chart
         pd.Series(w, name="weight").to_csv(f"{out_dir}/weights_HRPe_{tag}.csv")
