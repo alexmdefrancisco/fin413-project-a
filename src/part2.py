@@ -58,7 +58,7 @@ def analyze_covariances(cfg: dict) -> None:
         cfg (dict): Configuration dictionary from config.yaml
     """
     # Load raw data for prices
-    out_dir = os.path.dirname(cfg["paths"]["raw_data"])
+    out_dir = os.path.dirname(cfg["paths"]["log_returns_csv"])
     raw_data_path = cfg["data"]["raw_data"]
     data = pd.read_csv(raw_data_path, sep=',')
     data['Date'] = pd.to_datetime(data['Date'], format='%d.%m.%Y')

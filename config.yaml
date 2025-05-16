@@ -11,7 +11,7 @@ windows:
   rolling_corr: 30
 
 paths:
-  log_returns_csv:     "output/log_returns.csv"
+  log_returns_csv: "output/log_returns.csv"
   cov_pp:          "output/cov_PP.csv"
   cov_tr:          "output/cov_Tr.csv"
   cleaned_cov_pp:  "output/cleaned_cov_PP.npy"
