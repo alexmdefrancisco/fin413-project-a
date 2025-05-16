@@ -36,10 +36,10 @@ def build_hrpe(cfg: dict, log_returns: pd.DataFrame) -> pd.Series:
             columns=cov_raw.columns
         )
 
-        # compute δ1‐distance matrix
+        # compute δ1-distance matrix
         dist = schweizer_wolf_distance(window)
 
-        # cluster & quasi‐diagonalize
+        # cluster & quasi-diagonalize
         condensed = squareform(dist.values)
         link      = linkage(condensed, method="single")
         order     = getQuasiDiag(link)
@@ -65,53 +65,66 @@ def build_hrpe(cfg: dict, log_returns: pd.DataFrame) -> pd.Series:
 def build_tsm_hrpe(cfg: dict, log_returns: pd.DataFrame) -> pd.DataFrame:
     """
     Part 4c: Integrate Time-Series Momentum (TSM) with HRPe.
-    Rebalance monthly: signal from past 12 months, then weight = HRPe * sign(signal),
-    normalized so sum(abs(weights)) = 1. Returns DataFrame of monthly weights.
+    Rebalance monthly: signal from past `lookback_months`, then
+    w = HRPe_weights * sign(momentum), normalized so sum(abs(w))=1.
     """
-    lookback         = cfg["windows"]["lookback"]
-    momentum_months  = cfg.get("tsm", {}).get("lookback_months", 12)
-    dates            = log_returns.resample('ME').last().index
-    out_dir          = os.path.dirname(cfg["paths"]["log_returns_csv"])
+    lookback        = cfg["windows"]["lookback"]
+    mom_months      = cfg.get("tsm", {}).get("lookback_months", 12)
+    dates           = log_returns.resample("ME").last().index
+    out_dir         = os.path.dirname(cfg["paths"]["log_returns_csv"])
     os.makedirs(out_dir, exist_ok=True)
 
-    weights_ts = []
-    index_dates = []
+    weights_list, idx = [], []
 
     for date in dates:
-        # need at least momentum_months of history
-        if date < log_returns.index[0] + pd.DateOffset(months=momentum_months):
+        # need enough history for momentum
+        if date < log_returns.index[0] + pd.DateOffset(months=mom_months):
             continue
 
-        # 1) time‐series momentum signal
-        past   = date - pd.DateOffset(months=momentum_months)
+        # 1) momentum signal
+        past   = date - pd.DateOffset(months=mom_months)
         recent = date - pd.DateOffset(months=1)
         ret    = (log_returns.loc[recent] - log_returns.loc[past])
         signal = np.sign(ret)
 
-        # 2) HRPe weights as above
+        # 2) prepare lookback window for HRPe
         window = log_returns.loc[:date].tail(lookback)
-        dist   = schweizer_wolf_distance(window)
-        link   = linkage(squareform(dist.values), method="single")
-        order  = getQuasiDiag(link)
-        labels = window.columns[order].tolist()
-        hrp_w  = getRecBipart(window.cov(), labels)
 
-        # 3) apply signal, normalize
+        # 2a) clean its covariance
+        cov_raw = window.cov()
+        eigv, eigvec = np.linalg.eigh(cov_raw.values)
+        eigv = np.clip(eigv, 1e-4, None)
+        cov_clean = pd.DataFrame(
+            eigvec @ np.diag(eigv) @ eigvec.T,
+            index=cov_raw.index, columns=cov_raw.columns
+        )
+
+        # 2b) clustering via SW on returns
+        dist      = schweizer_wolf_distance(window)
+        condensed = squareform(dist.values)
+        link      = linkage(condensed, method="single")
+        order     = getQuasiDiag(link)
+        labels    = window.columns[order].tolist()
+
+        # 2c) allocate on cleaned covariance
+        hrp_w = getRecBipart(cov_clean, labels)
+
+        # 3) tilt by momentum, normalize abs sum to 1
         w = hrp_w * signal.reindex(hrp_w.index)
         w = w.div(w.abs().sum())
 
-        weights_ts.append(w)
-        index_dates.append(date)
+        weights_list.append(w)
+        idx.append(date)
 
-    weights_df = pd.DataFrame(weights_ts, index=index_dates)
+    # assemble, save, plot
+    weights_df = pd.DataFrame(weights_list, index=idx)
     weights_df.to_csv(f"{out_dir}/weights_TSM_HRPe.csv")
 
-    # heatmap over time
-    plt.figure(figsize=(12,8))
-    sns.heatmap(weights_df.T, cmap='RdBu_r', center=0)
-    plt.title('TSM-HRPe Weights Through Time')
-    plt.xlabel('Rebalance Date')
-    plt.ylabel('Asset')
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(weights_df.T, cmap="RdBu_r", center=0)
+    plt.title("TSM-HRPe Weights Over Time")
+    plt.xlabel("Rebalance Date")
+    plt.ylabel("Asset")
     plt.tight_layout()
     plt.savefig(f"{out_dir}/heatmap_TSM_HRPe.png")
     plt.close()

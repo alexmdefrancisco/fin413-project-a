@@ -81,7 +81,7 @@ def delta1_copula_distance(log_returns: pd.DataFrame) -> pd.DataFrame:
     # number of observations
     n_obs, _ = log_returns.shape
 
-    # 1) pseudo‐observations in (0,1)
+    # 1) pseudo-observations in (0,1)
     u = log_returns.rank(axis=0, method="average") / (n_obs + 1)
 
     assets = log_returns.columns
