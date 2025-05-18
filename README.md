@@ -48,7 +48,7 @@ Run the pipeline via `main.py`:
 
 ```bash
 # All parts in sequence
-python main.py --step all
+python main.py
 
 # Or individual steps:
 python main.py --step part1      # EDA & prepare log-returns
