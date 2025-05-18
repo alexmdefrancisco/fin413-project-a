@@ -1,12 +1,10 @@
-# main.py
-
 import argparse
 import yaml
 
 from src.part1 import prepare_data
 from src.part2 import compute_covariances
 from src.part3 import build_risk_portfolios
-from src.part4 import build_hrpe, build_tsm_hrpe
+from src.part4 import build_hrpe, build_tsm_hrpe, compute_performance
 
 def main(step: str, cfg_path: str = "config.yaml"):
     # load config
@@ -33,6 +31,7 @@ def main(step: str, cfg_path: str = "config.yaml"):
             lr = prepare_data(cfg)
         build_hrpe(cfg, lr)                   # HRPe (SW distance)
         build_tsm_hrpe(cfg, lr)               # TSM-HRPe
+        compute_performance(cfg, lr)          # performance of 1/N, HRPe, TSM-HRPe
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run project steps")
