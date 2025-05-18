@@ -43,8 +43,10 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-Run the pipeline via main.py:
 
+Run the pipeline via `main.py`:
+
+```bash
 # All parts in sequence
 python main.py --step all
 
@@ -53,3 +55,4 @@ python main.py --step part1      # EDA & prepare log-returns
 python main.py --step part2      # Covariance estimation & analysis
 python main.py --step part3      # Risk‐based portfolios
 python main.py --step part4      # HRPe & TSM-HRPe
+```
