@@ -65,17 +65,30 @@ def build_risk_portfolios(cfg: dict, log_returns: pd.DataFrame) -> None:
         plt.close()
 
     # 2) Equal-Risk-Contribution
-    def erc_objective(w, cov):
-        m  = cov @ w
-        rc = w * m
-        return ((rc[:,None] - rc[None,:])**2).sum()
+    def calculate_portfolio_variance(weights, cov_matrix):
+        return np.dot(weights.T, np.dot(cov_matrix, weights))
 
-    def solve_erc(cov):
-        res = minimize(erc_objective, w0, args=(cov,),
-                       method="SLSQP", bounds=bounds, constraints=cons)
-        if not res.success:
-            raise ValueError("ERC did not converge")
-        return res.x
+    def calculate_risk_contribution(weights, cov_matrix):
+        portfolio_variance = calculate_portfolio_variance(weights, cov_matrix)
+        marginal_contrib = np.dot(cov_matrix, weights)
+        risk_contrib = np.multiply(weights, marginal_contrib) / portfolio_variance
+        return risk_contrib
+
+    def risk_parity_objective(weights, cov_matrix):
+        risk_contrib = calculate_risk_contribution(weights, cov_matrix)
+        target_risk = np.mean(risk_contrib)
+        return np.sum((risk_contrib - target_risk) ** 2)
+
+    def solve_erc(cov_matrix):
+        num_assets = len(cov_matrix)
+        initial_weights = np.ones(num_assets) / num_assets
+        constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})
+        bounds = [(0, 1) for _ in range(num_assets)]
+        result = minimize(risk_parity_objective, initial_weights, args=(cov_matrix,),
+                          method='SLSQP', bounds=bounds, constraints=constraints)
+        if not result.success:
+            raise ValueError("Risk Parity did not converge")
+        return np.round(result.x, 8)
 
     erc_pp = solve_erc(cov_pp)
     erc_tr = solve_erc(cov_tr)

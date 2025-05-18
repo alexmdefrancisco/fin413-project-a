@@ -11,8 +11,8 @@ windows:
   rolling_corr: 30
 
 paths:
-  log_returns_csv: "output/log_returns.csv"
-  cov_pp:          "output/cov_PP.csv"
-  cov_tr:          "output/cov_Tr.csv"
-  cleaned_cov_pp:  "output/cleaned_cov_PP.npy"
-  cleaned_cov_tr:  "output/cleaned_cov_Tr.npy"
+  log_returns_csv: "/Users/mitrylitvin/School/EPFL/fin413/fin413-project-a/output/log_returns.csv"
+  cov_pp:          "/Users/mitrylitvin/School/EPFL/fin413/fin413-project-a/output/cov_PP.csv"
+  cov_tr:          "/Users/mitrylitvin/School/EPFL/fin413/fin413-project-a/output/cov_Tr.csv"
+  cleaned_cov_pp:  "/Users/mitrylitvin/School/EPFL/fin413/fin413-project-a/output/cleaned_cov_PP.npy"
+  cleaned_cov_tr:  "/Users/mitrylitvin/School/EPFL/fin413/fin413-project-a/output/cleaned_cov_Tr.npy"
